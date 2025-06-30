@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>구구단 출력기</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .gugudan-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .dan {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            width: 120px;
+        }
+
+        .dan h2 {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .dan p {
+            margin: 0.25rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>GuGuDan</h1>
+    <button onclick="generateGugudan()">구구단 출력</button>
+
+    <div class="gugudan-container" id="gugudanContainer"></div>
+
+    <script>
+        function generateGugudan() {
+            const container = document.getElementById('gugudanContainer');
+            container.innerHTML = '';
+
+            for (let i = 2; i <= 9; i++) {
+                const danDiv = document.createElement('div');
+                danDiv.className = 'dan';
+
+                const title = document.createElement('h2');
+                title.textContent = `${i}단`;
+                danDiv.appendChild(title);
+
+                for (let j = 1; j <= 9; j++) {
+                    const item = document.createElement('p');
+                    item.textContent = `${i} x ${j} = ${i * j}`;
+                    danDiv.appendChild(item);
+                }
+
+                container.appendChild(danDiv);
+            }
+        }
+    </script>
+</body>
+
+</html>

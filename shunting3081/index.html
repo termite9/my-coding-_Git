@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>동산역 입환(#3073,#3081)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #eef2f3;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .yard {
+            position: relative;
+            width: 1000px;
+            height: 440px;
+            margin: 40px auto;
+            border: 10px ridge;
+            background-color: ivory;
+        }
+
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .track {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background-color: #ccc;
+        }
+
+        #track1 {
+            top: 100px;
+        }
+
+        #track2 {
+            top: 140px;
+        }
+
+        #track3 {
+            top: 340px;
+        }
+
+        .trackLabel {
+            position: absolute;
+            font-weight: bold;
+            width: 100%;
+            left: -300px;
+        }
+
+        #label1 {
+            top: 100px;
+        }
+
+        #label2 {
+            top: 140px;
+        }
+
+        #label3 {
+            top: 340px;
+        }
+
+        .switch {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            border-radius: 50%;
+            border: 3px solid #000;
+            cursor: pointer;
+        }
+
+        #signal2 {
+            top: 150px;
+            left: calc(100% - 300px);
+        }
+
+        #signal11 {
+            top: 350px;
+            left: calc(100% - 300px);
+        }
+
+        .train {
+            position: absolute;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #train2 {
+            top: 145px;
+        }
+
+        #train3 {
+            top: 345px;
+        }
+
+        .car {
+            width: 15px;
+            height: 15px;
+            margin-right: 1px;
+            background-color: #666;
+            border: 1px solid #333;
+            border-radius: 3px;
+        }
+
+        .engine {
+            background-color: #d9534f;
+            border: 1px solid #b52b27;
+        }
+
+        .lightgreen {
+            background-color: #a8e6a1 !important;
+        }
+
+        #instructionBox {
+            font: 30px bold;
+            color: #c8221d;
+        }
+
+        button {
+            background-color: ivory;
+            color: black;
+            font-size: 24px bold;
+            padding: 10px 20px;
+            border: 5px ridged brown;
+            border-radius: 5px;
+        }
+
+        #trainNumber,
+        #number {
+            font-size: 24px;
+            text-align: center;
+
+        }
+
+        input {
+            width: 8ch;
+            font-family: monospace;
+            /* 글자 폭이 일정한 폰트 */
+            background-color: rgb(177, 192, 196);
+            color: black;
+            font-size: 20px bold;
+            padding: 10px 20px;
+            border: 5px ridge brown;
+            border-radius: 5px;
+        }
+
+        #btnDetachEngine,
+        #btnYardDrive,
+        #btnAttachEngine,
+        #btnAttachCars {
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>동산역 입환(#3073,#3081)</h1>
+    <div>
+        <p></p>
+    </div>
+    <div class="controls">
+        <input type="text" id="trainNumber" placeholder="열차번호 입력" />
+        <input type="number" id="number" placeholder="량수" />
+        <button id="btnDetachEngine">기관차 분리</button>
+        <button id="btnYardDrive">구내운전</button>
+        <button id="btnAttachEngine">기관차 연결</button>
+        <button id="btnAttachCars">화차 연결</button>
+
+    </div>
+    <div>
+        <p id="instructionBox">열차번호 입력</p>
+    </div>
+    <div class="yard">
+        <div id="track1" class="track"></div>
+        <div id="label1" class="trackLabel"></div>
+        <div id="track2" class="track"></div>
+        <div id="label2" class="trackLabel"></div>
+        <div id="track3" class="track"></div>
+        <div id="label3" class="trackLabel">11번</div>
+        <div id="signal2" class="switch"></div>
+        <div id="signal11" class="switch"></div>
+        <div id="train2" class="train"></div>
+        <div id="train3" class="train"></div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById("instructionBox").innerText = `입환량을 입력하세요 !`;
+            setTimeout(() => {
+                document.getElementById("instructionBox").innerText = `입환을 시작합니다. !`;
+                setTimeout(() => {
+                    document.getElementById("instructionBox").innerText = `기관차분리 (기관차분리 버튼을 클릭) !`;
+                }, 3000);
+            }, 3000);
+        }, 3000);
+
+
+        const train2 = document.getElementById("train2");
+        const train3 = document.getElementById("train3");
+        const trainNo = document.getElementById("trainNumber");
+        const numberInput = document.getElementById("number");
+        const btnDetachEngine = document.getElementById("btnDetachEngine");
+        const btnAttachEngine = document.getElementById("btnAttachEngine");
+        const btnYardDrive = document.getElementById("btnYardDrive");
+        const signal2 = document.getElementById("signal2");
+        const signal11 = document.getElementById("signal11");
+
+
+        const yardWidth = 1000;
+        const trainRightEdge = 400;
+
+        const initialCars = [];
+        for (let i = 0; i < 10; i++) {
+            const car = document.createElement("div");
+            car.classList.add("car");
+            initialCars.push(car);
+
+        }
+        const engine = document.createElement("div");
+        engine.classList.add("car", "engine");
+        initialCars.push(engine);
+        initialCars.forEach(car => train2.appendChild(car));
+
+
+
+        const initialTrainWidth = initialCars.length * 16;
+        train2.style.left = `${yardWidth - 600 - initialTrainWidth}px`;
+        const train2Right = yardWidth - 600;
+
+
+        btnDetachEngine.addEventListener("click", () => {
+            const children = train2.children;
+            btnDetachEngine.style.backgroundColor = "lightgreen";
+
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].classList.contains("engine")) {
+                    children[i - 1].style.marginRight = "20px";
+                    break;
+                }
+            }
+            setTimeout(() => {
+                document.getElementById("instructionBox").innerText = `▶ 기관차 구내운전 요청(구내운전버튼 클릭)  !`;
+            }, 5000);
+
+        });
+
+
+        btnYardDrive.addEventListener("click", () => {
+            signal2.style.backgroundColor = "green";
+            signal11.style.backgroundColor = "green";
+            btnYardDrive.style.backgroundColor = "lightgreen";
+
+            const engineElement = train2.querySelector(".engine");
+            if (!engineElement) return;
+            engineElement.style.position = "relative";
+            const signal2X = signal2.getBoundingClientRect().left;
+            const targetX = signal2X + 50;
+            const moveRightInterval = setInterval(() => {
+                const currentLeft = parseInt(engineElement.style.left || "0");
+                engineElement.style.left = `${currentLeft + 1}px`;
+                const engineX = engineElement.getBoundingClientRect().left;
+                if (engineX >= targetX) {
+                    clearInterval(moveRightInterval);
+                    const track3Top = document.getElementById("train3").getBoundingClientRect().top;
+                    const dropInterval = setInterval(() => {
+                        const currentTop = parseInt(engineElement.style.top || "0");
+                        engineElement.style.top = `${currentTop + 1}px`;
+                        const engineTop = engineElement.getBoundingClientRect().top;
+                        if (engineTop >= track3Top) {
+                            clearInterval(dropInterval);
+                            const signal11X = signal11.getBoundingClientRect().left;
+                            const targetLeftX = signal11X - 30;
+                            const moveLeftInterval = setInterval(() => {
+                                const currentLeft = parseInt(engineElement.style.left || "0");
+                                engineElement.style.left = `${currentLeft - 1}px`;
+                                const engineLeft = engineElement.getBoundingClientRect().left;
+                                if (engineLeft <= targetLeftX) {
+                                    clearInterval(moveLeftInterval);
+                                    signal2.style.backgroundColor = "red";
+                                    signal11.style.backgroundColor = "red";
+                                }
+                            }, 10);
+                        }
+                    }, 10);
+                }
+            }, 10);
+            setTimeout(() => {
+                document.getElementById("instructionBox").innerText = `▶ 기관차 연결 (기관차연결버튼을 계속 클릭)  !`;
+
+            }, 5000);
+
+        });
+
+        numberInput.addEventListener("input", () => {
+            const count = parseInt(numberInput.value);
+            if (!isNaN(count)) {
+                train3.innerHTML = "";
+                const cars = [];
+                for (let i = 0; i < count; i++) {
+                    const car = document.createElement("div");
+                    car.classList.add("car", "lightgreen");
+                    cars.push(car);
+                }
+                cars.forEach(car => train3.appendChild(car));
+                const trainWidth = cars.length * 16;
+                train3.style.left = `${yardWidth - trainRightEdge - trainWidth}px`;
+            }
+        });
+
+        btnAttachEngine.addEventListener("click", () => {
+            const engineElement = train2.querySelector(".engine");
+            if (!engineElement) return;
+            engineElement.style.position = "relative";
+            btnAttachEngine.style.backgroundColor = "lightgreen";
+
+            const lastCar = train3.lastElementChild;
+            if (!lastCar) return;
+
+            const targetLeft = lastCar.getBoundingClientRect().right;
+            const engineLeft = engineElement.getBoundingClientRect().left;
+
+            if (engineLeft > targetLeft) {
+                const currentLeft = parseInt(engineElement.style.left || "0");
+                engineElement.style.left = `${currentLeft - 5}px`;
+
+                const updatedLeft = engineElement.getBoundingClientRect().left;
+                if (updatedLeft <= targetLeft) {
+                    engineElement.remove();
+                    train3.innerHTML = "";
+
+                    const newCars = [];
+                    const carCount = parseInt(numberInput.value) || 10;
+                    for (let i = 0; i < carCount; i++) {
+                        const car = document.createElement("div");
+                        car.classList.add("car", "lightgreen");
+                        newCars.push(car);
+                    }
+                    const newEngine = document.createElement("div");
+                    newEngine.classList.add("car", "engine");
+                    newCars.push(newEngine);
+                    newCars.forEach(car => train3.appendChild(car));
+
+                    const newTrainWidth = newCars.length * 16;
+                    train3.style.left = `${yardWidth - 400 - newTrainWidth}px`;
+                    train3.style.top = "345px";
+
+
+                    setTimeout(() => {
+                        document.getElementById("instructionBox").innerText = `▶ 남인상선으로 퇴거 (신호기를 클릭)`;
+                    }, 5000);
+
+                    signal11.onclick = () => {
+                        signal11.style.backgroundColor = "green";
+                        const signalX = signal11.getBoundingClientRect().left;
+                        const stopX = signalX + 50;
+
+                        const moveInterval = setInterval(() => {
+                            const trainX = train3.getBoundingClientRect().left;
+                            if (trainX >= stopX) {
+                                clearInterval(moveInterval);
+                                signal11.style.backgroundColor = "red";
+
+                                const targetTop = 145;
+                                let riseInterval = setInterval(() => {
+                                    const currentTop = parseInt(train3.style.top || "345");
+                                    train3.style.top = `${currentTop - 1}px`;
+                                    if (currentTop - 1 <= targetTop) {
+                                        train3.style.top = `${targetTop}px`;
+                                        clearInterval(riseInterval);
+                                        signal2.style.backgroundColor = "green";
+                                    }
+                                }, 10);
+                            } else {
+                                const currentLeft = parseInt(train3.style.left || "0");
+                                train3.style.left = `${currentLeft + 1}px`;
+                            }
+                        }, 10);
+                        setTimeout(() => {
+                            document.getElementById("instructionBox").innerText = `▶ 도착화차와 연결 (화차연결 계속클릭)`;
+                        }, 10000);
+                    };
+
+
+                    btnAttachCars.onclick = () => {
+
+                        const train2RightEdge = train2.getBoundingClientRect().right;
+                        const train3LeftEdge = train3.getBoundingClientRect().left;
+                        btnAttachCars.style.backgroundColor = "lightgreen";
+
+                        if (train3LeftEdge > train2RightEdge - 15) {
+                            const currentLeft = parseInt(train3.style.left || "0");
+                            train3.style.left = `${currentLeft - 10}px`;
+                            if (train3.getBoundingClientRect().left <= train2RightEdge) {
+                                signal2.style.backgroundColor = "red";
+                            }
+                        }
+                        setTimeout(() => {
+                            document.getElementById("instructionBox").innerText = `▶ 연결되면 입환완료`;
+                        }, 5000);
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

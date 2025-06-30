@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>청녹색 화면 녹화기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e8f5f3;
+      color: #1b4d4a;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #2ba99c;
+      margin-bottom: 30px;
+    }
+
+    button, a {
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #2ba99c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    button:hover, a:hover {
+      background-color: #248b82;
+    }
+
+    #preview {
+      width: 80%;
+      max-width: 800px;
+      margin-top: 20px;
+      border: 4px solid #2ba99c;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    a {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎥 화면 녹화기</h1>
+
+  <button id="startBtn">녹화 시작 (영역 선택)</button>
+  <button id="stopBtn" disabled>녹화 정지</button>
+  <br>
+  <a id="downloadLink" download="screen_recording.mp4">📥 녹화 영상 다운로드</a>
+  <br>
+  <video id="preview" controls muted></video>
+  <br>
+  <button id="slowBtn" style="display:none;">🐢 느리게 재생 (0.5x)</button>
+  <button id="normalBtn" style="display:none;">🔁 정상 속도 (1.0x)</button>
+
+  <script>
+    let mediaRecorder;
+    let recordedChunks = [];
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const preview = document.getElementById('preview');
+    const downloadLink = document.getElementById('downloadLink');
+    const slowBtn = document.getElementById('slowBtn');
+    const normalBtn = document.getElementById('normalBtn');
+
+    startBtn.onclick = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { displaySurface: "monitor", cursor: "motion" },
+          audio: true
+        });
+
+        preview.srcObject = stream;
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          preview.src = url;
+          downloadLink.href = url;
+          downloadLink.style.display = 'inline-block';
+          slowBtn.style.display = 'inline-block';
+          normalBtn.style.display = 'inline-block';
+        };
+
+        mediaRecorder.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } catch (err) {
+        alert("화면 선택을 취소하셨거나 권한이 없습니다.");
+        console.error(err);
+      }
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+
+    slowBtn.onclick = () => preview.playbackRate = 0.5;
+    normalBtn.onclick = () => preview.playbackRate = 1.0;
+  </script>
+</body>
+</html>

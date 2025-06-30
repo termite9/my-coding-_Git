@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>코레일 동산역 입환작업</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #eef2f3;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .controls button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .yard {
+            position: relative;
+            width: 1000px;
+            height: 440px;
+            margin: 40px auto;
+            border: 1px solid #aaa;
+            background-color: #DCDCDC;
+        }
+
+        .track {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background-color: ivory;
+        }
+
+        .trackLabel {
+            position: absolute;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+        }
+
+        #track1 {
+            top: 100px;
+        }
+
+        #track2 {
+            top: 140px;
+        }
+
+        #track3 {
+            top: 340px;
+        }
+
+        #label11 {
+            top: 340px;
+        }
+
+        .switch {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid #000;
+            z-index: 10;
+        }
+
+        #signal {
+            left: 30%;
+            top: 110px;
+        }
+
+        #signal3 {
+            left: 30%;
+            top: 350px;
+        }
+
+        .train {
+            position: absolute;
+            display: flex;
+            top: 145px;
+            left: 35%;
+            transition: left 0.05s linear;
+            flex-direction: row;
+        }
+
+        .car {
+            width: 15px;
+            height: 15px;
+            margin-right: 1px;
+            background-color: #666;
+            border: 1px solid #333;
+            border-radius: 3px;
+        }
+
+        .engine {
+            background-color: #d9534f;
+            border: 1px solid #b52b27;
+        }
+
+        .lightgreen {
+            background-color: #a8e6a1 !important;
+        }
+
+        #trainInfo {
+            margin-top: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .top-inputs {
+            margin-top: 10px;
+        }
+
+        .top-inputs input {
+            font-size: 16px;
+            padding: 4px;
+            width: 100px;
+        }
+
+        .top-inputs button {
+            font-size: 14px;
+            padding: 5px 10px;
+            margin-left: 5px;
+        }
+
+        #releaseBtn {
+            background-color: red;
+            color: white;
+        }
+
+        #connectBtn {
+            background-color: green;
+            color: white;
+        }
+
+        .inactive {
+            background-color: gray !important;
+        }
+    </style>
+</head>
+
+<body>
+    <h1> 동산역 입환(#3082,#3074) </h1>
+    <div class="top-inputs">
+        <input type="text" id="trainNumber" maxlength="4" placeholder="열차번호 입력" />
+        <input type="number" id="greenCount" maxlength="2" placeholder="량" />
+        <button id="releaseBtn">해방</button>
+        <button id="connectBtn">연결</button>
+    </div>
+    <div class="controls">
+        <button id="btnDecoupleCars">화차 분리</button>
+        <button id="btnDecoupleEngine">기관차 분리</button>
+        <button id="btnYardLocal">구내입환</button>
+        <button id="btnEngineConnect">기관차연결</button>
+
+    </div>
+    <div id="trainInfo"></div>
+    <p>입환신호기를 클릭하여 신호를 조작하고 열차를 이동시키세요.</p>
+    <div class="yard">
+        <div id="track1" class="track"></div>
+        <div id="track2" class="track"></div>
+        <div id="track3" class="track"></div>
+        <div id="label11" class="trackLabel">11번</div>
+        <div id="signal" class="switch"></div>
+        <div id="signal3" class="switch"></div>
+        <div id="train" class="train"></div>
+    </div>
+    <script>
+        const train = document.getElementById("train");
+        const signal = document.getElementById("signal");
+        const signal3 = document.getElementById("signal3");
+        const btnDecoupleCars = document.getElementById("btnDecoupleCars");
+        const btnDecoupleEngine = document.getElementById("btnDecoupleEngine");
+        const trainNumberInput = document.getElementById("trainNumber");
+        const greenCountInput = document.getElementById("greenCount");
+        const trainInfo = document.getElementById("trainInfo");
+        const releaseBtn = document.getElementById("releaseBtn");
+        const connectBtn = document.getElementById("connectBtn");
+
+        releaseBtn.addEventListener("click", () => {
+            connectBtn.classList.add("inactive");
+            releaseBtn.classList.remove("inactive");
+            trainInfo.textContent += " - 해방";
+        });
+
+        connectBtn.addEventListener("click", () => {
+            releaseBtn.classList.add("inactive");
+            connectBtn.classList.remove("inactive");
+            trainInfo.textContent += " + 연결";
+        });
+
+        trainNumberInput.addEventListener("input", updateTrainInfo);
+        greenCountInput.addEventListener("input", updateTrainInfo);
+
+        function updateTrainInfo() {
+            const number = trainNumberInput.value;
+            const count = parseInt(greenCountInput.value);
+            if (number.length === 4 && !isNaN(count)) {
+                trainInfo.textContent = `${number} 열차입환  ${count}`;
+                applyGreenCars(count);
+            }
+        }
+
+        function applyGreenCars(count) {
+            cars.forEach((car, index) => {
+                car.classList.remove("lightgreen");
+                if (index < count) car.classList.add("lightgreen");
+            });
+        }
+
+        let signalColor = "red";
+        let state = 0;
+
+        const engine = document.createElement("div");
+        engine.classList.add("car", "engine");
+        train.appendChild(engine);
+
+        const cars = [];
+        for (let i = 0; i < 23; i++) {
+            const car = document.createElement("div");
+            car.classList.add("car");
+            cars.push(car);
+            train.appendChild(car);
+        }
+
+        function setupSignal(signalElement) {
+            signalElement.addEventListener("click", () => {
+                if (signalColor === "red" && state === 0) {
+                    signalElement.style.backgroundColor = "green";
+                    signalColor = "green";
+
+                    btnDecoupleCars.click();
+                    engine.style.position = "relative";
+                    cars.forEach(car => {
+                        if (car.classList.contains("lightgreen")) {
+                            car.style.position = "relative";
+                        }
+                    });
+
+                    let moveStep = 0;
+                    const moveInterval = setInterval(() => {
+                        const currentLeft = parseInt(engine.style.left || 0);
+                        engine.style.left = `${currentLeft - 1}px`;
+
+                        cars.forEach(car => {
+                            if (car.classList.contains("lightgreen")) {
+                                const left = parseInt(car.style.left || 0);
+                                car.style.left = `${left - 1}px`;
+                            }
+                        });
+
+                        moveStep++;
+
+                        const greenCars = cars.filter(c => c.classList.contains("lightgreen"));
+                        if (greenCars.length > 0) {
+                            const lastGreen = greenCars[greenCars.length - 1];
+                            const signalLeft = signal.getBoundingClientRect().left;
+                            const lastCarRight = lastGreen.getBoundingClientRect().right;
+
+                            if (lastCarRight < signalLeft - 15) {
+                                clearInterval(moveInterval);
+
+                                setTimeout(() => {
+                                    engine.style.top = "100px";
+                                    cars.forEach(car => {
+                                        if (car.classList.contains("lightgreen")) {
+                                            car.style.top = "100px";
+                                        }
+                                    });
+
+                                    let dropStep = 0;
+                                    const dropInterval = setInterval(() => {
+                                        const currentTop = parseInt(engine.style.top || 0);
+                                        engine.style.top = `${currentTop + 1}px`;
+
+                                        cars.forEach(car => {
+                                            if (car.classList.contains("lightgreen")) {
+                                                const top = parseInt(car.style.top || 0);
+                                                car.style.top = `${top + 1}px`;
+                                            }
+                                        });
+
+                                        dropStep++;
+                                        if (dropStep >= 100) {
+                                            clearInterval(dropInterval);
+                                            signalElement.style.backgroundColor = "red";
+                                            signalColor = "red";
+                                            state = 2;
+                                        }
+                                    }, 10);
+                                }, 1000);
+                            }
+                        }
+                    }, 10);
+                } else if (signalColor === "red" && state === 2) {
+                    signalElement.style.backgroundColor = "green";
+                    signalColor = "green";
+                    setTimeout(() => {
+                        train.style.left = "35%";
+                        train.style.top = "145px";
+                        signalElement.style.backgroundColor = "red";
+                        signalColor = "red";
+                        state = 0;
+                    }, 1000);
+                }
+            });
+        }
+
+        setupSignal(signal);
+        signal3.addEventListener("click", () => {
+            if (signalColor === "red" && state === 2) {
+                signal3.style.backgroundColor = "green";
+                signalColor = "green";
+
+                setTimeout(() => {
+                    engine.style.position = "relative";
+                    cars.forEach(car => {
+                        if (car.classList.contains("lightgreen")) {
+                            car.style.position = "relative";
+                        }
+                    });
+
+                    let moveRight = setInterval(() => {
+                        const currentLeft = parseInt(engine.style.left || 0);
+                        engine.style.left = `${currentLeft + 1}px`;
+
+                        cars.forEach(car => {
+                            if (car.classList.contains("lightgreen")) {
+                                const left = parseInt(car.style.left || 0);
+                                car.style.left = `${left + 1}px`;
+                            }
+                        });
+
+                        const engineRight = engine.getBoundingClientRect().right;
+                        const yardRight = document.querySelector(".yard").getBoundingClientRect().right;
+
+                        if (yardRight - engineRight <= 400) {
+                            clearInterval(moveRight);
+                            signal3.style.backgroundColor = "red";
+                            signalColor = "red";
+                            state = 3;
+                        }
+                    }, 10);
+                }, 1000);
+            }
+        });
+
+        setupSignal(signal);
+
+        btnDecoupleCars.addEventListener("click", () => {
+            let gapInserted = false;
+            for (let i = 0; i < cars.length - 1; i++) {
+                const current = cars[i];
+                const next = cars[i + 1];
+                if (current.classList.contains("lightgreen") && !next.classList.contains("lightgreen")) {
+                    current.style.marginRight = "20px";
+                    gapInserted = true;
+                    break;
+                }
+            }
+            if (!gapInserted) alert("화차 색 구분이 없습니다.");
+        });
+
+        btnDecoupleEngine.addEventListener("click", () => {
+            engine.style.marginRight = "20px";
+        });
+        // 기관차 현재 위치를 기억할 변수
+        let enginePositionLeft = 0;
+        let enginePositionTop = 145;
+
+        // 구내입환 실행 버튼 이벤트
+        document.getElementById("btnYardLocal").addEventListener("click", () => {
+            engine.style.position = "relative";
+            engine.style.left = engine.style.left || "0px";
+
+            signal.style.backgroundColor = "green";
+            signal3.style.backgroundColor = "green";
+            setTimeout(() => {
+                signal.style.backgroundColor = "red";
+                signal3.style.backgroundColor = "red";
+            }, 10000);
+
+            let move = 0;
+            const interval = setInterval(() => {
+                const currentLeft = parseInt(engine.style.left);
+                engine.style.left = `${currentLeft - 1}px`;
+                move++;
+                if (move >= 400) {
+                    clearInterval(interval);
+
+                    // 위로 200px 이동
+                    let upMove = 0;
+                    const upInterval = setInterval(() => {
+                        const currentTop = parseInt(engine.style.top || "145");
+                        engine.style.top = `${currentTop - 1}px`;
+                        upMove++;
+                        if (upMove >= 200) {
+                            clearInterval(upInterval);
+
+                            // 우측으로 200px 이동
+                            let rightMove = 0;
+                            const rightInterval = setInterval(() => {
+                                const currentLeft2 = parseInt(engine.style.left);
+                                engine.style.left = `${currentLeft2 + 1}px`;
+                                rightMove++;
+                                if (rightMove >= 200) {
+                                    clearInterval(rightInterval);
+
+                                    // 마지막 위치 기억
+                                    enginePositionLeft = currentLeft2 + 1;
+                                    enginePositionTop = parseInt(engine.style.top || "145");
+
+                                }
+                            }, 10);
+                        }
+                    }, 10);
+                }
+            }, 10);
+        });
+
+        document.getElementById("btnEngineConnect").addEventListener("click", () => {
+            engine.style.marginRight = "0px";
+            engine.style.position = "relative";
+
+            if (!engine.style.left) {
+                engine.style.left = `${enginePositionLeft}px`;
+            }
+
+            const currentLeft = parseInt(engine.style.left || enginePositionLeft);
+            const newLeft = currentLeft + 5;
+            engine.style.left = `${newLeft}px`;
+
+            // engine.style.top 제거 → 기존 위치 유지
+            engine.style.backgroundColor = "#d9534f";
+        });
+
+
+
+
+    </script>
+</body>
+
+</html>
