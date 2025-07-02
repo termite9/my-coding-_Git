@@ -249,9 +249,15 @@
         correctSound.onerror = function () { console.error('correct.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
         incorrectSound.onerror = function () { console.error('incorrect.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
 
-        const nounList = ['가문비나무', '낙엽송', '소나무', '아카시아나무', '잣나무', '전나무', '참나무', '편백나무'];
-        let availableNouns = [];
+        const nounList =
+
+
+            ['가문비나무', '낙엽송', '느티나무', '단풍나무', '벚나무', '삼나무', '소나무', '아카시아나무', '이팝나무', '잣나무', '전나무', '참나무', '측백나무', '편백나무', '히말라야시다'];
+
+
+
         let currentCorrectNoun = '';
+        let availableNouns = [];
 
         function getRandomNoun() {
             if (availableNouns.length === 0) {
