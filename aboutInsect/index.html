@@ -10,34 +10,21 @@
         rel="stylesheet">
     <style>
         :root {
-            /* Color palette definition */
             --bg-dark: #1a1a2e;
-            /* Very dark background */
             --bg-medium: #16213e;
-            /* Medium dark background */
             --card-bg: #0f3460;
-            /* Card/section background */
             --text-light: #e0e0eb;
-            /* Light text */
             --text-medium: #a0a0c0;
-            /* Medium text */
             --accent-purple: #e94560;
-            /* Accent purple (for buttons etc.) */
             --accent-blue: #0f3460;
-            /* Accent blue */
             --correct-color: #3498db;
-            /* Correct answer blue */
             --incorrect-color: #e74c3c;
-            /* Incorrect answer red */
             --border-color: rgba(255, 255, 255, 0.1);
-            /* Thin border */
             --shadow-color: rgba(0, 0, 0, 0.5);
-            /* Shadow color */
         }
 
         body {
             font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
-            /* Font change */
             margin: 0;
             padding: 0;
             display: flex;
@@ -46,24 +33,17 @@
             justify-content: center;
             min-height: 100vh;
             background: linear-gradient(135deg, var(--bg-dark), var(--bg-medium));
-            /* Gradient background */
             color: var(--text-light);
             overflow: hidden;
-            /* Prevent scrollbar */
         }
 
-        /* 게임 제목과 문제 수를 감싸는 컨테이너 */
         .header-container {
             display: flex;
             align-items: flex-end;
-            /* 텍스트의 하단 라인에 맞춤 */
             justify-content: center;
-            /* 중앙 정렬 */
             width: 100%;
             margin-bottom: 40px;
-            /* 제목 전체 컨테이너의 하단 여백 */
             gap: 15px;
-            /* 제목과 문제 수 사이 간격 */
         }
 
         .game-title {
@@ -77,19 +57,14 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 0;
-            /* 기존 마진 제거 */
             padding-bottom: 5px;
-            /* 밑줄 간격 확보용 */
         }
 
-        /* 현재 문제 정보를 표시할 스타일 */
         .current-question-info {
             font-size: 2.5em;
-            /* 제목 대비 작은 크기 */
             color: var(--text-medium);
             font-weight: 700;
             margin-bottom: 10px;
-            /* 제목 텍스트의 베이스라인에 맞추기 위한 조정 */
         }
 
 
@@ -119,7 +94,6 @@
             border-radius: 10px;
             border: 2px solid var(--accent-blue);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            background-color: rgba(255, 255, 255, 0.05);
             transition: transform 0.3s ease-in-out;
             min-width: 200px;
         }
@@ -166,10 +140,6 @@
             opacity: 0.3;
         }
 
-        #nounInput:focus::placeholder {
-            color: var(--text-light);
-        }
-
         #submitButton {
             padding: 12px 25px;
             background: linear-gradient(45deg, var(--accent-purple), #ff7e5f);
@@ -186,7 +156,6 @@
         #submitButton:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-            background: linear-gradient(45deg, #ff7e5f, var(--accent-purple));
         }
 
         #result {
@@ -259,8 +228,8 @@
     </div>
 
     <div class="input-section">
-        <input type="text" id="nounInput" placeholder="곤충 이름을 입력하세요" autofocus>
-        <button id="submitButton">제 출</button>
+        <input type="text" id="nounInput" placeholder="곤충 이름을 입력하고 Enter!" autofocus>
+        <button id="submitButton">about 이미지</button>
         <div id="result"></div>
         <div id="searchLinkContainer"></div>
     </div>
@@ -274,59 +243,36 @@
         const initialMessage = document.getElementById('initialMessage');
         const remainingCountSpan = document.getElementById('remainingCount');
 
-        // 부저 소리 객체 생성
         const correctSound = new Audio('sounds/correct.mp3');
         const incorrectSound = new Audio('sounds/incorrect.mp3');
 
         correctSound.onerror = function () { console.error('correct.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
         incorrectSound.onerror = function () { console.error('incorrect.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
 
-        // ====================================================================
-        // IMPORTANT: images 폴더에 새 나무 이미지를 추가할 경우,
-        // 아래 nounList 배열에 해당 나무 이름을 수동으로 추가해야 합니다.
-        // 예: images/벚나무1.png, images/벚나무2.png, images/벚나무3.png 를 추가했다면,
-        //     nounList에 '벚나무'를 추가해야 합니다.
-        // 브라우저 보안 정책상 JavaScript만으로는 로컬 폴더의 파일 목록을 직접 읽을 수 없습니다.
-        // ====================================================================
-        const nounList = ['나비', '벌', '잠자리'];
-        let availableNouns = []; // 현재 게임에서 사용할 수 있는 명사들 (셔플용)
-        // ====================================================================
-
+        const nounList = ['각다귀', '꽃등애', '나비', '뒤영벌', '딱정벌레', '말벌', '벌', '잠자리'];
+        let availableNouns = [];
         let currentCorrectNoun = '';
 
-        // nounList에서 무작위 명사를 선택하고, 선택된 명사를 availableNouns에서 제거합니다.
-        // availableNouns가 비어있으면 nounList 전체를 다시 채웁니다.
         function getRandomNoun() {
             if (availableNouns.length === 0) {
-                // 모든 명사가 한 번씩 선택되었으므로, availableNouns를 다시 채웁니다.
-                // slice()를 사용하여 nounList의 복사본을 만들어 원본 배열을 보호합니다.
                 availableNouns = nounList.slice();
-
-                // 새롭게 채워진 availableNouns를 셔플합니다 (선택 순서 무작위화)
                 for (let i = availableNouns.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
-                    [availableNouns[i], availableNouns[j]] = [availableNouns[j], availableNouns[i]]; // 배열 요소 교환
+                    [availableNouns[i], availableNouns[j]] = [availableNouns[j], availableNouns[i]];
                 }
-                console.log("모든 명사가 사용되어 초기화 및 셔플되었습니다. 새로운 순서:", availableNouns);
             }
-
-            // availableNouns에서 마지막 요소를 뽑아 사용하고 제거합니다.
-            // pop()은 배열의 마지막 요소를 제거하고 반환하므로 효율적입니다.
-            const randomIndex = Math.floor(Math.random() * availableNouns.length); // 무작위 인덱스 선택
-            const selectedNoun = availableNouns.splice(randomIndex, 1)[0]; // 해당 인덱스의 요소 제거 및 반환
-
-            console.log("선택된 명사:", selectedNoun, "남은 명사:", availableNouns);
+            const randomIndex = Math.floor(Math.random() * availableNouns.length);
+            const selectedNoun = availableNouns.splice(randomIndex, 1)[0];
             return selectedNoun;
         }
 
-
         function loadImages(noun) {
-            imageContainer.innerHTML = ''; // 기존 이미지 및 메시지 삭제
-            initialMessage.style.display = 'block'; // 메시지를 다시 보이게 함
-            imageContainer.appendChild(initialMessage); // 메시지를 컨테이너에 추가
+            imageContainer.innerHTML = '';
+            initialMessage.style.display = 'block';
+            imageContainer.appendChild(initialMessage);
 
             let loadedCount = 0;
-            const totalImages = 3; // 각 명사당 3개의 이미지가 있다고 가정합니다 (예: 소나무1.png, 소나무2.png, 소나무3.png)
+            const totalImages = 3;
 
             for (let i = 1; i <= totalImages; i++) {
                 const img = document.createElement('img');
@@ -336,15 +282,15 @@
                 img.onload = function () {
                     loadedCount++;
                     if (loadedCount === totalImages) {
-                        initialMessage.style.display = 'none'; // 모든 이미지가 로드되면 메시지 숨김
+                        initialMessage.style.display = 'none';
                     }
                 };
 
                 img.onerror = function () {
                     console.error(`이미지 로드 오류: images/${noun}${i}.png`);
-                    this.src = `https://via.placeholder.com/300x250/342e47/ffffff?text=이미지+없음`; // 대체 이미지
+                    this.src = `https://via.placeholder.com/300x250/342e47/ffffff?text=이미지+없음`;
                     this.alt = "이미지를 찾을 수 없습니다";
-                    loadedCount++; // 오류가 나도 카운트 증가시켜 메시지 숨김 처리
+                    loadedCount++;
                     if (loadedCount === totalImages) {
                         initialMessage.style.display = 'none';
                     }
@@ -354,38 +300,45 @@
         }
 
         function updateRemainingCount() {
-            // nounList.length는 총 문제의 개수
-            // availableNouns.length는 다음 라운드에 남은 문제의 개수
-            // 현재 문제까지 포함해서 총 몇 번째 문제인지를 표시하기 위해 availableNouns.length + 1
-            remainingCountSpan.textContent = `(${availableNouns.length + 1})`;
+            const total = nounList.length;
+            const current = total - availableNouns.length;
+            remainingCountSpan.textContent = `(${current}/${total})`;
         }
 
         function initializeGame() {
             if (nounList.length === 0) {
                 initialMessage.textContent = '게임에 필요한 명사가 없습니다. nounList를 확인하세요.';
-                submitButton.disabled = true; // 게임 시작 불가
+                submitButton.disabled = true;
                 return;
             }
-            currentCorrectNoun = getRandomNoun(); // getRandomNoun은 이제 인자를 받지 않습니다.
+            currentCorrectNoun = getRandomNoun();
             loadImages(currentCorrectNoun);
             resultDiv.textContent = '';
             resultDiv.className = '';
             searchLinkContainer.innerHTML = '';
             nounInput.value = '';
             nounInput.focus();
-            updateRemainingCount(); // 남은 문제 수 업데이트
+            updateRemainingCount();
         }
 
+        // ====================================================================
+        // 'about 이미지' 버튼 클릭 이벤트: 구글 검색창만 엽니다.
+        // ====================================================================
         submitButton.addEventListener('click', function () {
-            checkNoun();
+            const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(currentCorrectNoun)}`;
+            window.open(googleSearchUrl, '_blank');
         });
 
+        // ====================================================================
+        // 'Enter' 키 입력 이벤트: 기존의 정답 확인 기능을 수행합니다.
+        // ====================================================================
         nounInput.addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
                 checkNoun();
             }
         });
 
+        // 정답 확인 기능 (기존과 동일)
         function checkNoun() {
             const enteredNoun = nounInput.value.trim();
             searchLinkContainer.innerHTML = '';
@@ -395,23 +348,21 @@
                 resultDiv.className = 'correct';
                 correctSound.play();
                 displaySearchLink(currentCorrectNoun);
-                // 모든 문제가 소진된 마지막 정답인 경우, 다음 문제가 출제되기 전에 availableNouns가 초기화되므로
-                // updateRemainingCount()를 호출하여 "(3/3)" -> "(1/3)"과 같은 상태가 아닌
-                // "(총 문제 수 / 총 문제 수)" 상태로 전환되는 것을 자연스럽게 표시합니다.
-                if (availableNouns.length === 0) { // 다음 라운드 진입 전
-                    // 다음 라운드 시작 전, availableNouns가 초기화될 것을 예상하여 전체 문제 수로 표시
+
+                if (availableNouns.length === 0) {
                     remainingCountSpan.textContent = `(${nounList.length}/${nounList.length})`;
                 }
-                setTimeout(initializeGame, 1500); // 1.5초 후 새 게임 시작
+                setTimeout(initializeGame, 1500);
             } else {
                 resultDiv.textContent = "다시 시도해보세요.";
                 resultDiv.className = 'incorrect';
                 incorrectSound.play();
-                displaySearchLink(currentCorrectNoun); // 오답이어도 검색 링크 제공
+                displaySearchLink(currentCorrectNoun);
             }
             nounInput.value = '';
         }
 
+        // 검색 링크 표시 기능 (기존과 동일)
         function displaySearchLink(query) {
             const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
             const linkElement = document.createElement('a');
@@ -422,7 +373,6 @@
             searchLinkContainer.appendChild(linkElement);
         }
 
-        // DOMContentLoaded 이벤트 발생 시 게임 초기화
         document.addEventListener('DOMContentLoaded', initializeGame);
     </script>
 </body>
