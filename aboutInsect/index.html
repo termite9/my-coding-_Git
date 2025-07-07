@@ -4,23 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>신비한 명사 이미지 퀴즈</title>
+    <title>이미지 퀴즈 이미지 이름 알기</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
         rel="stylesheet">
     <style>
         :root {
+            /* Color palette definition */
             --bg-dark: #1a1a2e;
+            /* Very dark background */
             --bg-medium: #16213e;
+            /* Medium dark background */
             --card-bg: #0f3460;
+            /* Card/section background */
             --text-light: #e0e0eb;
+            /* Light text */
             --text-medium: #a0a0c0;
+            /* Medium text */
             --accent-purple: #e94560;
+            /* Accent purple (for buttons etc.) */
             --accent-blue: #0f3460;
+            /* Accent blue */
             --correct-color: #3498db;
+            /* Correct answer blue */
             --incorrect-color: #e74c3c;
+            /* Incorrect answer red */
             --border-color: rgba(255, 255, 255, 0.1);
+            /* Thin border */
             --shadow-color: rgba(0, 0, 0, 0.5);
+            /* Shadow color */
         }
 
         body {
@@ -34,23 +46,39 @@
             min-height: 100vh;
             background: linear-gradient(135deg, var(--bg-dark), var(--bg-medium));
             color: var(--text-light);
-            overflow: hidden;
+            overflow: auto;
+            /* Allow scrolling on smaller screens */
+            box-sizing: border-box;
+            /* Include padding in element's total width and height */
+            padding-top: 20px;
+            /* Add some top padding for mobile */
+            padding-bottom: 20px;
+            /* Add some bottom padding for mobile */
         }
 
         .header-container {
             display: flex;
-            align-items: flex-end;
+            flex-direction: column;
+            /* Stack title and count vertically on mobile */
+            align-items: center;
             justify-content: center;
             width: 100%;
-            margin-bottom: 15px;
-            gap: 10px;
+            margin-bottom: 5px;
+            /* Reduced margin for mobile */
+            gap: 5px;
+            /* Reduced gap for mobile */
+            padding: 0 5px;
+            /* Add horizontal padding */
+            box-sizing: border-box;
         }
 
         .game-title {
-            font-size: 3.0em;
+            font-size: 1.2em;
+            /* Adjusted for mobile */
             color: var(--text-light);
-            text-shadow: 2px 2px 8px var(--shadow-color);
-            letter-spacing: 2px;
+            text-shadow: 2px 2px 12px var(--shadow-color);
+            letter-spacing: 1px;
+            /* Adjusted for mobile */
             font-weight: 700;
             text-align: center;
             background: linear-gradient(45deg, #ffdc7d, #ff8a00);
@@ -58,48 +86,70 @@
             -webkit-text-fill-color: transparent;
             margin: 0;
             padding-bottom: 5px;
+            white-space: nowrap;
+            /* Prevent line breaks */
         }
 
         .current-question-info {
-            font-size: 2.5em;
+            font-size: 1em;
+            /* Adjusted for mobile */
             color: var(--text-medium);
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-top: 5px;
+            /* Added margin for stacking */
         }
 
 
         .image-container {
             display: flex;
+            flex-direction: column;
+            /* Stack images vertically on small screens */
             justify-content: center;
             align-items: center;
-            gap: 1vw;
-            margin-bottom: 10px;
-            width: 90vw;
-            height: 45vh;
-            min-width: 650px;
-            min-height: 200px;
-            max-height: 500px;
-            padding: 1vw;
+            gap: 10px;
+            /* Gap for stacked images */
+            margin-bottom: 5px;
+            /* Reduced margin */
+            width: 95vw;
+            /* Use vw for responsiveness */
+            height: auto;
+            /* Auto height for stacked images */
+            min-width: unset;
+            /* Remove min-width constraint */
+            min-height: unset;
+            /* Remove min-height constraint */
+            max-height: unset;
+            /* Remove max-height constraint */
+            padding: 5px;
+            /* Adjusted padding */
             background-color: var(--card-bg);
-            border-radius: 15px;
+            border-radius: 5px;
             box-shadow: 0 8px 20px var(--shadow-color);
             border: 1px solid var(--border-color);
             position: relative;
+            box-sizing: border-box;
         }
 
         .image-container img {
-            width: calc((100% - (2 * 1vw)) / 3);
-            height: 100%;
+            width: 90%;
+            /* Make images take more width */
+            max-width: 300px;
+            /* Max width for images */
+            height: auto;
+            /* Maintain aspect ratio */
             object-fit: cover;
             border-radius: 10px;
             border: 2px solid var(--accent-blue);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            background-color: rgba(255, 255, 255, 0.05);
             transition: transform 0.3s ease-in-out;
-            min-width: 200px;
+            min-width: unset;
+            /* Remove min-width constraint */
         }
 
         .image-container img:hover {
-            transform: scale(1.03);
+            transform: scale(1.02);
+            /* Slightly smaller scale for mobile */
         }
 
         .input-section {
@@ -107,25 +157,37 @@
             flex-direction: column;
             align-items: center;
             background-color: var(--card-bg);
-            padding: 10px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px var(--shadow-color);
-            margin-top: 10px;
+            padding: 5px;
+            /* Adjusted padding */
+            border-radius: 5px;
+            box-shadow: 0 8px 10px var(--shadow-color);
+            margin-top: 1px;
+            /* Adjusted margin */
             border: 1px solid var(--border-color);
+            width: 95vw;
+            /* Use vw for responsiveness */
+            max-width: 400px;
+            /* Max width for input section */
+            box-sizing: border-box;
         }
 
         #nounInput {
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 1px;
+            /* Adjusted padding */
+            margin-bottom: 5px;
+            /* Adjusted margin */
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            width: 280px;
-            font-size: 2.8em;
+            border-radius: 5px;
+            width: calc(100% - 24px);
+            /* Full width minus padding */
+            font-size: 1em;
+            /* Adjusted for mobile */
             text-align: center;
             font-weight: bold;
             color: var(--text-light);
             background-color: var(--bg-medium);
             transition: border-color 0.3s ease;
+            box-sizing: border-box;
         }
 
         #nounInput:focus {
@@ -135,35 +197,48 @@
 
         #nounInput::placeholder {
             color: rgba(255, 255, 255, 0.3);
-            font-size: 0.5em;
+            font-size: 0.6em;
+            /* Adjusted for mobile */
             font-weight: normal;
-            opacity: 0.3;
+            opacity: 0.8;
+            /* Increased opacity for better visibility */
         }
 
         #submitButton {
-            padding: 12px 25px;
+            padding: 5px 5px;
+            /* Adjusted padding */
             background: linear-gradient(45deg, var(--accent-purple), #ff7e5f);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 1px;
             cursor: pointer;
-            font-size: 1.3em;
+            font-size: 0.8em;
+            /* Adjusted for mobile */
             font-weight: 600;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
+            width: 100%;
+            /* Full width button */
+            box-sizing: border-box;
         }
 
         #submitButton:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            transform: translateY(-1px);
+            /* Slightly less intense hover effect for mobile */
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #ff7e5f, var(--accent-purple));
         }
 
         #result {
-            margin-top: 20px;
-            font-size: 1.8em;
+            margin-top: 5px;
+            /* Adjusted margin */
+            font-size: 0.8em;
+            /* Adjusted for mobile */
             font-weight: bold;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
             transition: color 0.3s ease;
+            text-align: center;
+            /* Ensure text is centered */
         }
 
         .correct {
@@ -175,19 +250,26 @@
         }
 
         .search-link {
-            margin-top: 15px;
-            font-size: 1.8em;
+            margin-top: 10px;
+            /* Adjusted margin */
+            font-size: 1em;
+            /* Adjusted for mobile */
             color: var(--text-medium);
             text-decoration: none;
             cursor: pointer;
             transition: color 0.5s ease;
             position: relative;
+            text-align: center;
+            /* Ensure text is centered */
         }
 
         .search-link::after {
             content: '';
             position: absolute;
-            left: 0;
+            left: 50%;
+            /* Center the underline */
+            transform: translateX(-50%);
+            /* Center the underline */
             bottom: -3px;
             width: 0;
             height: 2px;
@@ -204,7 +286,8 @@
         }
 
         .message {
-            font-size: 2.2em;
+            font-size: 1.2em;
+            /* Adjusted for mobile */
             color: var(--text-medium);
             text-align: center;
             width: 100%;
@@ -214,12 +297,111 @@
             transform: translate(-50%, -50%);
             z-index: 1;
         }
+
+        /* Desktop specific styles - revert some changes for larger screens */
+        @media (min-width: 768px) {
+            .header-container {
+                flex-direction: row;
+                /* Back to row for larger screens */
+                align-items: flex-end;
+                margin-bottom: 40px;
+                gap: 15px;
+            }
+
+            .game-title {
+                font-size: 3.5em;
+                /* Original size */
+                letter-spacing: 2px;
+                white-space: normal;
+            }
+
+            .current-question-info {
+                font-size: 2.5em;
+                /* Original size */
+                margin-top: 0;
+                margin-bottom: 10px;
+                /* Align with title baseline */
+            }
+
+            .image-container {
+                flex-direction: row;
+                /* Back to row for larger screens */
+                gap: 1vw;
+                margin-bottom: 10px;
+                width: 90vw;
+                height: 45vh;
+                min-width: 650px;
+                min-height: 200px;
+                max-height: 500px;
+                padding: 1vw;
+            }
+
+            .image-container img {
+                width: calc((100% - (2 * 1vw)) / 3);
+                /* Original width calculation */
+                height: 100%;
+                min-width: 200px;
+            }
+
+            .image-container img:hover {
+                transform: scale(1.03);
+                /* Original hover effect */
+            }
+
+            .input-section {
+                padding: 30px;
+                /* Original padding */
+                margin-top: 30px;
+                /* Original margin */
+                width: auto;
+                max-width: unset;
+            }
+
+            #nounInput {
+                padding: 15px;
+                /* Original padding */
+                margin-bottom: 20px;
+                width: 280px;
+                /* Original width */
+                font-size: 2.8em;
+                /* Original size */
+            }
+
+            #nounInput::placeholder {
+                font-size: 0.5em;
+                /* Original size */
+                opacity: 0.3;
+            }
+
+            #submitButton {
+                padding: 12px 25px;
+                /* Original padding */
+                font-size: 1.3em;
+                /* Original size */
+            }
+
+            #submitButton:hover {
+                transform: translateY(-2px);
+                /* Original hover effect */
+                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            }
+
+            #result {
+                margin-top: 20px;
+                font-size: 1.8em;
+            }
+
+            .search-link {
+                margin-top: 15px;
+                font-size: 1.8em;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="header-container">
-        <h1 class="game-title">이 곤충의 이름은 ?</h1>
+        <h1 class="game-title">아래 이미지의 이름은?</h1>
         <span id="remainingCount" class="current-question-info"></span>
     </div>
 
@@ -228,8 +410,8 @@
     </div>
 
     <div class="input-section">
-        <input type="text" id="nounInput" placeholder="곤충 이름을 입력하고 Enter!" autofocus>
-        <button id="submitButton">about 이미지</button>
+        <input type="text" id="nounInput" placeholder="이름 입력하고 enter" autofocus>
+        <button id="submitButton">정답확인(or 이미지확인)</button>
         <div id="result"></div>
         <div id="searchLinkContainer"></div>
     </div>
@@ -245,14 +427,23 @@
 
         const correctSound = new Audio('sounds/correct.mp3');
         const incorrectSound = new Audio('sounds/incorrect.mp3');
+        const appearSound = new Audio('sounds/appear.mp3'); // Added appear sound
 
+        // Add error handling for sound files
         correctSound.onerror = function () { console.error('correct.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
         incorrectSound.onerror = function () { console.error('incorrect.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
+        appearSound.onerror = function () { console.error('appear.mp3 로드 실패. 파일 경로를 확인하거나 파일을 넣어주세요.'); };
 
+
+        // IMPORTANT: images 폴더에 새 곤충 이미지를 추가할 경우,
+        // 아래 nounList 배열에 해당 곤충 이름을 수동으로 추가해야 합니다.
+        // 예: images/나비1.png, images/나비2.png, images/나비3.png 를 추가했다면,
+        //     nounList에 '나비'를 추가해야 합니다.
+        // 브라우저 보안 정책상 JavaScript만으로는 로컬 폴더의 파일 목록을 직접 읽을 수 없습니다.
         const nounList =
 
 
-            ['각다귀', '깍지벌레', '꽃등애', '나비', '노린재', '뒤영벌', '딱정벌레', '땅벌', '말벌', '메두기', '메뚜기', '무당벌레', '바퀴벌레', '벌', '빈대', '잠자리', '진딧물', '풍뎅이', '하늘소'];
+            ['각다귀', '깍지벌레', '꽃등애', '꿀벌', '나비', '날개미', '노린재', '뒤영벌', '딱정벌레', '땅벌', '말벌', '메뚜기', '무당벌레', '바퀴벌레', '빈대', '사마귀', '송충이', '잎벌레', '잠자리', '좀', '진드기', '진딧물', '집게벌레', '풍뎅이', '하늘소', '하루살이', '흰개미'];
 
 
 
@@ -262,13 +453,16 @@
         function getRandomNoun() {
             if (availableNouns.length === 0) {
                 availableNouns = nounList.slice();
+                // Shuffle the array
                 for (let i = availableNouns.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [availableNouns[i], availableNouns[j]] = [availableNouns[j], availableNouns[i]];
                 }
+                console.log("모든 명사가 사용되어 초기화 및 셔플되었습니다. 새로운 순서:", availableNouns);
             }
             const randomIndex = Math.floor(Math.random() * availableNouns.length);
             const selectedNoun = availableNouns.splice(randomIndex, 1)[0];
+            console.log("선택된 명사:", selectedNoun, "남은 명사:", availableNouns);
             return selectedNoun;
         }
 
@@ -279,6 +473,9 @@
 
             let loadedCount = 0;
             const totalImages = 3;
+
+            // Play appear sound when images start loading
+            appearSound.play();
 
             for (let i = 1; i <= totalImages; i++) {
                 const img = document.createElement('img');
@@ -307,7 +504,7 @@
 
         function updateRemainingCount() {
             const total = nounList.length;
-            const current = total - availableNouns.length;
+            const current = total - availableNouns.length; // Calculate current question number
             remainingCountSpan.textContent = `(${current}/${total})`;
         }
 
@@ -315,6 +512,7 @@
             if (nounList.length === 0) {
                 initialMessage.textContent = '게임에 필요한 명사가 없습니다. nounList를 확인하세요.';
                 submitButton.disabled = true;
+                nounInput.disabled = true; // Disable input if no nouns
                 return;
             }
             currentCorrectNoun = getRandomNoun();
@@ -327,24 +525,18 @@
             updateRemainingCount();
         }
 
-        // ====================================================================
-        // 'about 이미지' 버튼 클릭 이벤트: 구글 검색창만 엽니다.
-        // ====================================================================
+        // '정답 확인' 버튼 클릭 이벤트: 이제 이 버튼이 정답을 검증합니다.
         submitButton.addEventListener('click', function () {
-            const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(currentCorrectNoun)}`;
-            window.open(googleSearchUrl, '_blank');
+            checkNoun();
         });
 
-        // ====================================================================
-        // 'Enter' 키 입력 이벤트: 기존의 정답 확인 기능을 수행합니다.
-        // ====================================================================
+        // Enter 키 입력 이벤트: 기존과 동일하게 정답을 검증합니다.
         nounInput.addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
                 checkNoun();
             }
         });
 
-        // 정답 확인 기능 (기존과 동일)
         function checkNoun() {
             const enteredNoun = nounInput.value.trim();
             searchLinkContainer.innerHTML = '';
@@ -354,31 +546,32 @@
                 resultDiv.className = 'correct';
                 correctSound.play();
                 displaySearchLink(currentCorrectNoun);
-
+                // Check if all questions are answered after the current correct answer
                 if (availableNouns.length === 0) {
+                    // All questions answered, set display to (total/total) to indicate completion
                     remainingCountSpan.textContent = `(${nounList.length}/${nounList.length})`;
                 }
-                setTimeout(initializeGame, 1500);
+                setTimeout(initializeGame, 1500); // Start new game after 1.5 seconds
             } else {
                 resultDiv.textContent = "다시 시도해보세요.";
                 resultDiv.className = 'incorrect';
                 incorrectSound.play();
-                displaySearchLink(currentCorrectNoun);
+                displaySearchLink(currentCorrectNoun); // Provide search link even on incorrect answer
             }
-            nounInput.value = '';
+            nounInput.value = ''; // Clear input field
         }
 
-        // 검색 링크 표시 기능 (기존과 동일)
         function displaySearchLink(query) {
             const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
             const linkElement = document.createElement('a');
             linkElement.href = googleSearchUrl;
             linkElement.target = '_blank';
-            linkElement.textContent = `웹에서 검색하기`;
+            linkElement.textContent = `웹에서 '${query}' 검색하기`; // Added noun to link text
             linkElement.classList.add('search-link');
             searchLinkContainer.appendChild(linkElement);
         }
 
+        // Initialize game when DOM is fully loaded
         document.addEventListener('DOMContentLoaded', initializeGame);
     </script>
 </body>
