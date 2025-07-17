@@ -309,7 +309,7 @@
             }
 
             .game-title {
-                font-size: 2.8em;
+                font-size: 3.5em;
                 /* Original size */
                 letter-spacing: 2px;
                 white-space: normal;
@@ -358,23 +358,23 @@
             }
 
             #nounInput {
-                padding: 5px;
+                padding: 15px;
                 /* Original padding */
                 margin-bottom: 20px;
                 width: 280px;
                 /* Original width */
-                font-size: 2.2em;
+                font-size: 2.8em;
                 /* Original size */
             }
 
             #nounInput::placeholder {
                 font-size: 0.5em;
                 /* Original size */
-                opacity: 0.5;
+                opacity: 0.3;
             }
 
             #submitButton {
-                padding: 5px 5px;
+                padding: 12px 25px;
                 /* Original padding */
                 font-size: 1.3em;
                 /* Original size */
@@ -410,7 +410,7 @@
     </div>
 
     <div class="input-section">
-        <input type="text" id="nounInput" placeholder="입력후 Enter/space" autofocus>
+        <input type="text" id="nounInput" placeholder="이름 입력하고 enter" autofocus>
         <button id="submitButton">정답확인(or 이미지확인)</button>
         <div id="result"></div>
         <div id="searchLinkContainer"></div>
@@ -443,7 +443,7 @@
         const nounList =
 
 
-            ['갈퀴나물', '강아지풀', '개나리꽃', '개망초', '금계국', '기생초', '라일락', '루드베키아', '목련꽃', '민들레', '수국', '아스틸베', '작약', '장미꽃', '진달래꽃', '찔레꽃', '철쭉꽃', '칸나', '튤립', '해당화'];
+            ['갈퀴나물', '강아지풀', '개망초', '금계국', '기생초', '루드베키아', '민들레', '아스틸베', '작약', '찔레꽃', '칸나', '해당화'];
 
 
         let availableNouns = [];
@@ -544,31 +544,28 @@
             }
         });
 
-
         function checkNoun() {
             const enteredNoun = nounInput.value.trim();
             searchLinkContainer.innerHTML = '';
 
-            // 💡 여기를 수정합니다: 입력된 값과 정답의 앞 2글자만 비교합니다.
-            const enteredNounPrefix = enteredNoun.substring(0, 2);
-            const correctNounPrefix = currentCorrectNoun.substring(0, 2);
-
-            if (enteredNounPrefix === correctNounPrefix) { // 앞 2글자 비교
+            if (enteredNoun === currentCorrectNoun) {
                 resultDiv.textContent = "정답입니다!";
                 resultDiv.className = 'correct';
                 correctSound.play();
                 displaySearchLink(currentCorrectNoun);
+                // Check if all questions are answered after the current correct answer
                 if (availableNouns.length === 0) {
+                    // All questions answered, set display to (total/total) to indicate completion
                     remainingCountSpan.textContent = `(${nounList.length}/${nounList.length})`;
                 }
-                setTimeout(initializeGame, 1500);
+                setTimeout(initializeGame, 1500); // Start new game after 1.5 seconds
             } else {
                 resultDiv.textContent = "다시 시도해보세요.";
                 resultDiv.className = 'incorrect';
                 incorrectSound.play();
-                displaySearchLink(currentCorrectNoun);
+                displaySearchLink(currentCorrectNoun); // Provide search link even on incorrect answer
             }
-            nounInput.value = '';
+            nounInput.value = ''; // Clear input field
         }
 
         function displaySearchLink(query) {

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>삼국지 인물 조회</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Color palette definition */
+            --bg-dark: #1a1a2e;
+            /* Very dark background */
+            --bg-medium: #16213e;
+            /* Medium dark background */
+            --card-bg: #0f3460;
+            /* Card/section background */
+            --text-light: #e0e0eb;
+            /* Light text */
+            --text-medium: #a0a0c0;
+            /* Medium text */
+            --accent-purple: #e94560;
+            /* Accent purple (for buttons etc.) */
+            --accent-blue: #0f3460;
+            /* Accent blue */
+            --correct-color: #3498db;
+            /* Correct answer blue */
+            --incorrect-color: #e74c3c;
+            /* Incorrect answer red */
+            --border-color: rgba(255, 255, 255, 0.1);
+            /* Thin border */
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            /* Shadow color */
+        }
+
+        body {
+            font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-dark), var(--bg-medium));
+            color: var(--text-light);
+            overflow-x: hidden;
+            /* Prevent horizontal scrollbar */
+        }
+
+        .header-container {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 3.5em;
+            color: var(--text-light);
+            text-shadow: 2px 2px 8px var(--shadow-color);
+            letter-spacing: 2px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ffdc7d, #ff8a00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            padding-bottom: 5px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px var(--shadow-color);
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        #characterInput {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: calc(100% - 30px);
+            /* Adjust width for padding */
+            font-size: 1.8em;
+            text-align: center;
+            font-weight: bold;
+            color: var(--text-light);
+            background-color: var(--bg-medium);
+            transition: border-color 0.3s ease;
+        }
+
+        #characterInput:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        #characterInput::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.7em;
+            font-weight: normal;
+            opacity: 0.5;
+        }
+
+        #searchButton {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, var(--accent-purple), #ff7e5f);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        #searchButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #ff7e5f, var(--accent-purple));
+        }
+
+        #resultContainer {
+            background-color: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px var(--shadow-color);
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+            max-width: 700px;
+            width: 90%;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .result-item {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .result-item strong {
+            color: var(--accent-purple);
+        }
+
+        .fellow-list {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .fellow-list li {
+            background-color: var(--bg-medium);
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: var(--text-medium);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #errorMessage {
+            color: var(--incorrect-color);
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.5em;
+            }
+
+            #characterInput {
+                font-size: 1.5em;
+            }
+
+            #searchButton {
+                font-size: 1.1em;
+                padding: 10px 20px;
+            }
+
+            .result-item {
+                font-size: 1.1em;
+            }
+
+            .fellow-list li {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-container">
+        <h1 class="game-title">三國志 인물 정보 조회</h1>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="characterInput" placeholder="인물 이름을 입력하세요 (예: 유비, 조조, 제갈량)" autofocus>
+        <button id="searchButton">조 회</button>
+    </div>
+
+    <div id="resultContainer">
+        <p class="result-item" id="introMessage">인물 이름을 입력하고 '조회' 버튼을 눌러보세요.</p>
+        <p class="result-item" id="characterInfo"></p>
+        <p class="result-item" id="fellowsInfo"></p>
+        <p class="result-item" id="errorMessage"></p>
+    </div>
+
+    <script>
+        const characterInput = document.getElementById('characterInput');
+        const searchButton = document.getElementById('searchButton');
+        const introMessage = document.getElementById('introMessage');
+        const characterInfo = document.getElementById('characterInfo');
+        const fellowsInfo = document.getElementById('fellowsInfo');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let samgukjiCharacters = {}; // JSON 데이터를 저장할 객체
+
+        // characters.json 파일을 로드하는 함수
+        async function loadCharacters() {
+            try {
+                const response = await fetch('characters.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                samgukjiCharacters = await response.json();
+                console.log("삼국지 인물 데이터 로드 완료:", samgukjiCharacters);
+            } catch (error) {
+                console.error("삼국지 인물 데이터를 로드하는 중 오류가 발생했습니다:", error);
+                errorMessage.textContent = '데이터 로드에 실패했습니다. characters.json 파일이 올바른 위치에 있는지 확인해주세요.';
+                searchButton.disabled = true; // 버튼 비활성화
+            }
+        }
+
+        // 인물 정보를 조회하고 표시하는 함수
+        function searchCharacter() {
+            const inputName = characterInput.value.trim();
+            clearResults(); // 이전 결과 초기화
+
+            if (inputName === "") {
+                errorMessage.textContent = "인물 이름을 입력해주세요.";
+                return;
+            }
+
+            const charData = samgukjiCharacters[inputName];
+
+            if (charData) {
+                introMessage.style.display = 'none'; // 시작 메시지 숨기기
+                const [master, role] = charData;
+
+                characterInfo.innerHTML = `<strong>${inputName}</strong>님의 주군: <strong>${master}</strong>  <br> 역할: <strong>${role}</strong>`;
+
+                // 같은 주군을 모시는 동료 찾기
+                const fellows = Object.keys(samgukjiCharacters).filter(name => {
+                    // 자기 자신은 동료에서 제외
+                    return name !== inputName && samgukjiCharacters[name][0] === master;
+                });
+
+                if (fellows.length > 0) {
+                    fellowsInfo.innerHTML = `같은 주군을 모시는 동료: <ul class="fellow-list">${fellows.map(f => `<li>${f}</li>`).join('')}</ul>`;
+                } else {
+                    fellowsInfo.textContent = `같은 주군을 모시는 다른 동료는 찾을 수 없습니다.`;
+                }
+
+            } else {
+                errorMessage.textContent = `'${inputName}'에 대한 정보를 찾을 수 없습니다. 정확한 이름을 입력해주세요.`;
+                introMessage.style.display = 'block'; // 시작 메시지 다시 표시
+            }
+        }
+
+        // 결과 표시 영역 초기화
+        function clearResults() {
+            characterInfo.textContent = "";
+            fellowsInfo.textContent = "";
+            errorMessage.textContent = "";
+        }
+
+        // 이벤트 리스너 설정
+        searchButton.addEventListener('click', searchCharacter);
+        characterInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                searchCharacter();
+            }
+        });
+
+        // 페이지 로드 시 데이터 로드
+        document.addEventListener('DOMContentLoaded', loadCharacters);
+    </script>
+</body>
+
+</html>
