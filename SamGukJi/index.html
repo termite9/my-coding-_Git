@@ -21,6 +21,7 @@
             /* Light text */
             --text-medium: #a0a0c0;
             /* Medium text */
+            --accent-yellow: #f3f021;
             --accent-purple: #e94560;
             /* Accent purple (for buttons etc.) */
             --accent-blue: #0f3460;
@@ -154,7 +155,7 @@
         }
 
         .result-item strong {
-            color: var(--accent-purple);
+            color: var(--accent-yellow);
         }
 
         .fellow-list {
@@ -267,7 +268,7 @@
                 introMessage.style.display = 'none'; // 시작 메시지 숨기기
                 const [master, role] = charData;
 
-                characterInfo.innerHTML = `<strong>${inputName}</strong>님의 주군: <strong>${master}</strong>  <br> 역할: <strong>${role}</strong>`;
+                characterInfo.innerHTML = `<strong>${inputName}</strong>님의 주군: <strong>${master}</strong>  <br><br> 역할: <strong>${role}</strong>`;
 
                 // 같은 주군을 모시는 동료 찾기
                 const fellows = Object.keys(samgukjiCharacters).filter(name => {
