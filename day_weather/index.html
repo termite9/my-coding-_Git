@@ -118,6 +118,11 @@
 
         updateDisplay();
         fetchWeather();
+        // 기존 600000(10분)을 60000(1분)으로 변경
+        setInterval(() => {
+            fetchWeather();
+            updateDisplay();
+        }, 60000); // 1000이 1초이므로, 60000은 60초입니다.
     </script>
 </body>
 </html>
