@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Naver Blog 모음</title>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#38bdf8; }
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji;}
+    .wrap{max-width:900px;margin:40px auto;padding:16px;}
+    .card{background:var(--card);border:1px solid #1f2937;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.25);}
+    .head{padding:18px 20px;border-bottom:1px solid #1f2937;display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .title{font-weight:700;letter-spacing:.2px}
+    .muted{color:var(--muted);font-size:13px}
+    .body{padding:18px 20px;}
+    textarea{width:100%;min-height:160px;background:#0b1220;color:var(--text);border:1px solid #1f2937;border-radius:10px;padding:12px 14px;resize:vertical;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    button{appearance:none;border:1px solid #273043;background:#111827;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
+    button:hover{border-color:var(--accent)}
+    .primary{background:linear-gradient(180deg,#0ea5e9,#0284c7);border-color:#0369a1}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px dashed #334155;border-radius:999px;font-size:12px}
+    .switch{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+    input[type="checkbox"]{width:18px;height:18px}
+    .status{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .stat{font-size:12px;border:1px solid #334155;padding:6px 10px;border-radius:8px;color:var(--muted)}
+    .last a{color:#93c5fd;text-decoration:none}
+    .last a:hover{text-decoration:underline}
+    .footer{padding:14px 20px;border-top:1px solid #1f2937;display:flex;justify-content:space-between;align-items:center}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div>
+          <div class="title">🔹주제와 관련된 Blog들 입니다</div>
+          <div class="muted"> keywords = ["재미있는 퇴직 후 이야기"]</div>
+        </div>
+        <label class="switch muted" title="중복 없이 모두 소진할 때까지">
+          <input id="noRepeat" type="checkbox" checked>
+          <span>중복 금지</span>
+        </label>
+      </div>
+      <div class="body">
+        <label class="muted" for="links">Naver Blog links </label>
+        <textarea id="links" placeholder="https://example.com\nhttps://news.example.com/article\nhttps://youtu.be/dQw4w9WgXcQ"></textarea>
+
+        <div class="row">
+          <button class="primary" id="openNew">랜덤 열기 (새 탭)</button>
+          <button id="openSelf">랜덤 이동 (현재 탭)</button>
+          <button id="shuffleBtn" title="목록을 다시 섞고 초기화합니다.">재섞기/초기화</button>
+          <span class="pill" id="countBadge">남은 항목: 0</span>
+        </div>
+
+        <div class="status">
+          <div class="stat last" id="lastOpened">마지막 링크: (없음)</div>
+          <div class="stat" id="errors">에러: 0</div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="small">Tip: http/https로 시작하지 않는 줄은 자동으로 무시합니다.</span>
+        <span class="small">© Random Link Opener</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- core state ---
+    let pool = [];           // 남은 후보 (중복 금지 모드에서 사용)
+    let allLinks = [];       // 전체 원본
+    let errorCount = 0;
+
+    const $ = (q) => document.querySelector(q);
+    const textArea = $('#links');
+    const noRepeat = $('#noRepeat');
+    const countBadge = $('#countBadge');
+    const lastOpened = $('#lastOpened');
+    const errors = $('#errors');
+
+    // 예시 데이터
+    // 키워드표시 확인할것
+    const example = [
+ 'https://blog.naver.com/hjsj1231/224021118178',
+ 'https://blog.naver.com/tj3042/224021938860',
+ 'https://blog.naver.com/ata-raxia/224021591359',
+ 'https://blog.naver.com/yourjoker/224021574133',
+ 'https://blog.naver.com/minkichoi/224021509527',
+ 'https://blog.naver.com/porter9615/224021000813',
+ 'https://blog.naver.com/meta_q/224019735756',
+ 'https://blog.naver.com/cjjayu/224020536773',
+ 'https://blog.naver.com/youlmu2/224020435346',
+ 'https://blog.naver.com/leekn01/224020283843',
+ 'https://blog.naver.com/senior0675/224020127425',
+ 'https://blog.naver.com/ghkdehgk__/224019983461',
+ 'https://blog.naver.com/7444ok/224019922253',
+ 'https://blog.naver.com/nyslydia/224019702619',
+ 'https://blog.naver.com/insight-coach/224016396896',
+ 'https://blog.naver.com/ellecod/224019539881',
+ 'https://blog.naver.com/hyeonjuhyeonju/224019404656',
+ 'https://blog.naver.com/sunday0014/224019384666',
+ 'https://blog.naver.com/olive_dew/224019203454',
+ 'https://blog.naver.com/determine789/224019058835',
+ 'https://blog.naver.com/provide9829/224019053982',
+ 'https://blog.naver.com/jinstay25/224018879431',
+ 'https://blog.naver.com/yzkl1do7x8t7s/224018629789',
+ 'https://blog.naver.com/smartwiiz/224017971284',
+ 'https://blog.naver.com/readersguide/224017519917',
+ 'https://blog.naver.com/fourmee6/224017331295',
+ 'https://blog.naver.com/limhak9048/224017284041',
+ 'https://blog.naver.com/insight-coach/224016388379',
+ 'https://blog.naver.com/kubkun/224016668506',
+ 'https://blog.naver.com/lovelc980221/224016491044',
+ 'https://blog.naver.com/knowfutureself/224016464256',
+ 'https://blog.naver.com/tjalsgml740/224016217907',
+ 'https://blog.naver.com/ccddee954/224016096916',
+ 'https://blog.naver.com/hjseo72/224015983477',
+ 'https://blog.naver.com/zmfhqk8/224015968746',
+ 'https://blog.naver.com/muse_in_you/224015404485',
+ 'https://blog.naver.com/yesmj6030/224015344143',
+ 'https://blog.naver.com/kimsoohan-moo/224015296787',
+ 'https://blog.naver.com/naelttraipj020/224015139415',
+ 'https://blog.naver.com/doors2kk/224014946274',
+ 'https://blog.naver.com/jjo-8848/224014741701',
+ 'https://blog.naver.com/thecreatorsai/224014597786',
+ 'https://blog.naver.com/smart-fp/224014393927',
+ 'https://blog.naver.com/banapresso_official/224014257088',
+ 'https://blog.naver.com/yourjoker/224014387302',
+ 'https://blog.naver.com/les0819/224014172994',
+ 'https://blog.naver.com/wkdbdjfka/224014035600',
+ 'https://blog.naver.com/tange63/224013742923',
+ 'https://blog.naver.com/thank121/224012778928',
+ 'https://blog.naver.com/harame0531/224012746010',
+ 'https://blog.naver.com/2_sso/224011630310',
+ 'https://blog.naver.com/kmjkds0136/224010793784',
+ 'https://blog.naver.com/danayjs00/224010497511',
+ 'https://blog.naver.com/dalkishabet/224010234185',
+ 'https://blog.naver.com/life40plus/224010368940',
+ 'https://blog.naver.com/faktilmak/224010242790',
+ 'https://blog.naver.com/ohyes0999/224010176441',
+ 'https://blog.naver.com/1personbz/224009915759',
+ 'https://blog.naver.com/catnyang999/223961506355',
+ 'https://blog.naver.com/sejong_story/224009834812',
+ 'https://blog.naver.com/info_tree/224009699235',
+ 'https://blog.naver.com/c1c1b1b1/224009558777',
+ 'https://blog.naver.com/sunday0014/224009260589',
+ 'https://blog.naver.com/hi2558/224009024063',
+ 'https://blog.naver.com/2bongeui/224008962856',
+ 'https://blog.naver.com/1personbz/224008469916',
+ 'https://blog.naver.com/rghqn0989/224008334872',
+ 'https://blog.naver.com/paxleesoo/224008243841',
+ 'https://blog.naver.com/doeseung/224007928194',
+ 'https://blog.naver.com/jiyun5407/224007903681',
+ 'https://blog.naver.com/joonhope/224007818239',
+ 'https://blog.naver.com/lli0101/224007722491',
+ 'https://blog.naver.com/hansbae/224007430697',
+ 'https://blog.naver.com/ysw2350/224007415992',
+ 'https://blog.naver.com/cities6/224007207420',
+ 'https://blog.naver.com/isibada/224007144902',
+ 'https://blog.naver.com/simmanikim/224006920650',
+ 'https://blog.naver.com/lysbone37/224003017982',
+ 'https://blog.naver.com/capljs01/224006522745',
+ 'https://blog.naver.com/snowj54/224006082225',
+ 'https://blog.naver.com/djajsl0241/224005830763',
+ 'https://blog.naver.com/yuhanmedics/224005565851',
+ 'https://blog.naver.com/yasanacademy/224004795477',
+ 'https://blog.naver.com/lsja5882/224003703103',
+ 'https://blog.naver.com/hazzine_moment/224003410493',
+ 'https://blog.naver.com/kwoun0933/224003121060',
+ 'https://blog.naver.com/rainandstart/224002739702',
+ 'https://blog.naver.com/says0243/224002377254',
+ 'https://blog.naver.com/luxuryjh72/224002292738',
+ 'https://blog.naver.com/lunakim00/224002227388',
+ 'https://blog.naver.com/forutuber/224000736999',
+ 'https://blog.naver.com/mvpsoon/224000836027',
+ 'https://blog.naver.com/soogill/224000423503',
+ 'https://blog.naver.com/2xun_ys/223987607997',
+ 'https://blog.naver.com/b1vhfx00eb145/223999479146',
+ 'https://blog.naver.com/dbyolo/223999033205',
+ 'https://blog.naver.com/shulamite_/223998741624',
+ 'https://blog.naver.com/alchun7medi/223998466186',
+ 'https://blog.naver.com/alchun7medi/223998453808',
+ 'https://blog.naver.com/recordwithyo/223997968734']
+      ;
+
+    // 초기 세팅
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!textArea.value.trim()) textArea.value = example.join('\n');
+      rebuild();
+    });
+
+    // 유틸: 텍스트 영역 → 링크 배열
+    function parseLinks() {
+      const raw = textArea.value
+        .split(/\s|,|\n|\r/)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .filter(s => /^https?:\/\//i.test(s));
+      return Array.from(new Set(raw)); // 중복 제거
+    }
+
+    // 유틸: 배열 섞기 (Fisher-Yates)
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // 풀 재구성
+    function rebuild() {
+      allLinks = parseLinks();
+      pool = noRepeat.checked ? shuffle([...allLinks]) : [];
+      updateCount();
+    }
+
+    // 남은 개수 갱신
+    function updateCount() {
+      const remain = noRepeat.checked ? pool.length : allLinks.length;
+      countBadge.textContent = `남은 항목: ${remain}`;
+    }
+
+    // 랜덤 하나 가져오기
+    function pickOne() {
+      if (noRepeat.checked) {
+        if (pool.length === 0) {
+          // 소진됨 → 다시 섞을지 물어보기
+          const again = confirm('모든 링크를 한 번씩 열었습니다. 다시 섞어서 반복할까요?');
+          if (again) {
+            pool = shuffle([...allLinks]);
+          } else {
+            return null;
+          }
+        }
+        return pool.pop();
+      } else {
+        if (allLinks.length === 0) return null;
+        const idx = Math.floor(Math.random() * allLinks.length);
+        return allLinks[idx];
+      }
+    }
+
+    // 열기
+    function openRandom(target = '_blank') {
+      const url = pickOne();
+      if (!url) { updateCount(); return; }
+      try {
+        const win = window.open(url, target);
+        if (!win && target === '_blank') {
+          alert('팝업이 차단된 것 같습니다. 브라우저에서 이 사이트의 팝업을 허용해주세요.');
+        }
+        lastOpened.innerHTML = `마지막 링크: <a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+      } catch (e) {
+        errorCount++;
+        errors.textContent = `에러: ${errorCount}`;
+        console.error(e);
+      }
+      updateCount();
+    }
+
+    // 이벤트 바인딩
+    $('#openNew').addEventListener('click', () => openRandom('_blank'));
+    $('#openSelf').addEventListener('click', () => openRandom('_self'));
+    $('#shuffleBtn').addEventListener('click', rebuild);
+    noRepeat.addEventListener('change', rebuild);
+    textArea.addEventListener('input', rebuild);
+  </script>
+</body>
+</html>

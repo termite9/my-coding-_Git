@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>터마이트님 전주 덕진동 날씨판</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #0f172a; /* 세련된 네이비 다크 모드 */
+            color: #f8fafc;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .dashboard {
+            width: 95%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        /* 날짜부 */
+        .section-date { flex: 1; text-align: left; padding-left: 5%; }
+        .date-display { font-size: 5.2rem; font-weight: 300; line-height: 1.2; }
+        .day-display { font-size: 3.5rem; color: #dde331; margin-top: 10px; }
+
+        /* 온도부 (가장 크게) */
+        .section-temp { flex: 1.5; text-align: center; }
+        .temp-display { 
+            font-size: 10rem; 
+            font-weight: 800; 
+            color: #e6ab17; /* 시인성 좋은 앰버 컬러 */
+            text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .unit { font-size: 4rem; vertical-align: top; margin-left: -20px; }
+
+        /* 바람부 (작게) */
+        .section-wind { flex: 1; text-align: right; padding-right: 5%; }
+        .wind-label { font-size: 1.2rem; color: #38bdf8; margin-bottom: 8px; }
+        .wind-display { font-size: 2.5rem; font-weight: 500; }
+
+        /* 하단 바 */
+        .status-bar {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #475569;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <div class="section-date">
+            <div id="date" class="date-display">--.--</div>
+            <div id="day" class="day-display">LOADING...</div>
+        </div>
+
+        <div class="section-temp">
+            <span id="temp" class="temp-display">--</span><span class="unit">°</span>
+        </div>
+
+        <div class="section-wind">
+            <div class="wind-label">WIND</div>
+            <div id="wind" class="wind-display">-- m/s</div>
+        </div>
+    </div>
+
+    <div class="status-bar" id="update-status">
+        REFRESHING EVERY 10 MIN
+    </div>
+
+    <script>
+        // 발급받으신 API 키를 아래에 입력하세요.
+        const API_KEY = 'YOUR_API_KEY_HERE'; 
+        const LAT = 35.8486; // 전주시 덕진동 위도
+        const LON = 127.1347; // 전주시 덕진동 경도
+
+        function updateTime() {
+            const now = new Date();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const date = now.getDate().toString().padStart(2, '0');
+            const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            
+            document.getElementById('date').innerText = `${month}.${date}`;
+            document.getElementById('day').innerText = days[now.getDay()];
+        }
+
+        async function fetchWeather() {
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${LAT}&lon=${LON}&appid=${API_KEY}&units=metric`);
+                const data = await response.json();
+                
+                document.getElementById('temp').innerText = Math.round(data.main.temp);
+                document.getElementById('wind').innerText = data.wind.speed + ' m/s';
+                
+                const now = new Date();
+                document.getElementById('update-status').innerText = `LAST UPDATED: ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            } catch (error) {
+                console.error("날씨 정보 호출 실패:", error);
+                // API 키가 없을 경우를 대비한 시연용 데이터
+                document.getElementById('temp').innerText = '-7';
+                document.getElementById('wind').innerText = '4.1 m/s';
+            }
+        }
+
+        // 초기 실행
+        updateTime();
+        fetchWeather();
+
+        // 10분마다 새로고침 (600,000ms)
+        setInterval(() => {
+            fetchWeather();
+            updateTime();
+        }, 600000);
+    </script>
+</body>
+</html>
